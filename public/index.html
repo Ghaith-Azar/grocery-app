@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>The List — Household Grocery</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <header class="masthead">
+    <h1>The List</h1>
+    <p class="tagline">the household's shared grocery run</p>
+  </header>
+
+  <!-- ===================== LIST VIEW ===================== -->
+  <section id="list-view">
+
+    <form id="add-form" class="add-bar" autocomplete="off">
+      <input id="item-name" type="text" placeholder="Add an item…" maxlength="80" required />
+      <div class="add-bar-row">
+        <select id="item-category" aria-label="Category"></select>
+        <input id="item-qty" type="text" placeholder="qty" maxlength="20" class="qty-input" aria-label="Quantity (optional)" />
+        <button type="submit" class="add-button" aria-label="Add item">Add</button>
+      </div>
+    </form>
+
+    <div class="profile-row">
+      <label for="your-name">You</label>
+      <input id="your-name" type="text" placeholder="your name (optional)" maxlength="30" />
+      <div id="color-picker" class="color-picker" role="group" aria-label="Choose your color tag"></div>
+    </div>
+
+    <p id="status-msg" class="status-msg" role="status" aria-live="polite"></p>
+
+    <div id="recent-section" class="recent-section" hidden>
+      <p class="recent-label">Recently bought — tap to add again</p>
+      <div id="recent-chips" class="recent-chips"></div>
+    </div>
+
+    <div id="empty-state" class="empty-state" hidden>
+      <p>The list is empty.</p>
+      <p class="empty-sub">Add the first thing you need above — everyone in the house will see it.</p>
+    </div>
+
+    <div id="groups" class="groups"></div>
+
+    <button id="start-shopping" class="cta-button" disabled>Start Grocery Shopping</button>
+  </section>
+
+  <!-- ===================== SHOPPING VIEW ===================== -->
+  <section id="shopping-view" hidden>
+
+    <div class="shopping-header">
+      <button id="back-btn" class="link-button" type="button">&larr; Back to list</button>
+      <div class="progress-label"><span id="progress-count">0 / 0</span> in the cart</div>
+    </div>
+
+    <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progress-bar">
+      <div id="progress-fill" class="progress-fill"></div>
+    </div>
+
+    <div id="shopping-groups" class="groups"></div>
+
+    <button id="finish-shopping" class="cta-button">Finish Shopping</button>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
