@@ -24,10 +24,11 @@
     <form id="add-form" class="add-bar" autocomplete="off">
       <input id="item-name" type="text" placeholder="Add an item…" maxlength="80" required />
       <div class="add-bar-row">
-        <select id="item-category" aria-label="Category"></select>
+        <select id="item-category" aria-label="Category" required></select>
         <input id="item-qty" type="text" placeholder="qty" maxlength="20" class="qty-input" aria-label="Quantity (optional)" />
         <button type="submit" class="add-button" aria-label="Add item">Add</button>
       </div>
+      <p id="category-hint" class="category-hint" aria-live="polite"></p>
     </form>
 
     <div class="profile-row">

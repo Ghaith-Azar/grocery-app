@@ -13,6 +13,7 @@
     itemName: document.getElementById("item-name"),
     itemCategory: document.getElementById("item-category"),
     itemQty: document.getElementById("item-qty"),
+    categoryHint: document.getElementById("category-hint"),
     yourName: document.getElementById("your-name"),
     statusMsg: document.getElementById("status-msg"),
     emptyState: document.getElementById("empty-state"),
@@ -30,6 +31,184 @@
     progressCount: document.getElementById("progress-count"),
     progressFill: document.getElementById("progress-fill"),
   };
+
+  // ---------- Auto-categorization ----------
+  // A small keyword dictionary for guessing a category from an item name.
+  // Deliberately simple and local (no API call per keystroke): each
+  // category maps to words/phrases that reliably belong to it. Longer,
+  // more specific phrases win over shorter ones so e.g. "peanut butter"
+  // (Pantry) doesn't get confused by a stray single-word rule.
+  const CATEGORY_KEYWORDS = {
+    "Produce": [
+      "apple", "banana", "orange", "grape", "lemon", "lime", "lettuce",
+      "spinach", "kale", "carrot", "potato", "sweet potato", "onion",
+      "garlic", "tomato", "cucumber", "bell pepper", "jalapeno",
+      "broccoli", "cauliflower", "celery", "mushroom", "avocado",
+      "strawberry", "blueberry", "raspberry", "blackberry", "melon",
+      "watermelon", "pineapple", "mango", "peach", "pear", "plum",
+      "cherry", "corn", "zucchini", "squash", "cabbage", "radish", "beet",
+      "asparagus", "green bean", "ginger", "cilantro", "parsley",
+      "basil", "scallion", "leek", "herbs",
+    ],
+    "Bakery": [
+      "bread", "bagel", "bun", "roll", "croissant", "muffin", "donut",
+      "doughnut", "tortilla", "pita", "baguette", "biscuit", "pastry",
+    ],
+    "Dairy & Eggs": [
+      "egg", "milk", "cheese", "yogurt", "yoghurt", "butter", "cream",
+      "sour cream", "cottage cheese", "half and half", "creamer",
+      "margarine", "mozzarella", "cheddar",
+    ],
+    "Meat & Seafood": [
+      "chicken", "beef", "pork", "turkey", "bacon", "sausage", "ham",
+      "steak", "ground beef", "lamb", "fish", "salmon", "tuna", "shrimp",
+      "crab", "lobster", "seafood", "meatball", "hot dog", "deli meat",
+    ],
+    "Pantry & Dry Goods": [
+      "rice", "pasta", "noodle", "flour", "sugar", "salt", "cereal",
+      "oats", "oatmeal", "bean", "lentil", "canned", "soup", "ketchup",
+      "mustard", "mayo", "mayonnaise", "cooking oil", "olive oil",
+      "vinegar", "honey", "peanut butter", "jam", "jelly", "spice",
+      "broth", "stock", "tomato sauce", "tomato paste", "baking powder",
+      "baking soda", "yeast", "black pepper",
+    ],
+    "Frozen": [
+      "frozen", "ice cream", "popsicle", "frozen pizza", "frozen meal",
+      "waffle", "tv dinner", "ice pop",
+    ],
+    "Beverages": [
+      "water", "soda", "juice", "coffee", "tea", "beer", "wine",
+      "almond milk", "soy milk", "oat milk", "energy drink",
+      "sparkling water", "lemonade", "kombucha",
+    ],
+    "Snacks": [
+      "chip", "cracker", "cookie", "candy", "chocolate", "popcorn",
+      "pretzel", "nuts", "granola bar", "trail mix",
+    ],
+    "Household & Cleaning": [
+      "detergent", "dish soap", "paper towel", "toilet paper",
+      "trash bag", "garbage bag", "cleaner", "bleach", "sponge",
+      "napkin", "aluminum foil", "plastic wrap", "ziploc", "laundry",
+      "dishwasher pod", "air freshener",
+    ],
+    "Personal Care": [
+      "shampoo", "conditioner", "toothpaste", "toothbrush", "deodorant",
+      "lotion", "razor", "floss", "sunscreen", "tissue", "cotton swab",
+      "soap bar", "hand soap",
+    ],
+  };
+
+  function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function tokenize(str) {
+    return str.toLowerCase().match(/[a-z']+/g) || [];
+  }
+
+  // Naive plural handling: "apples" -> also try "apple", "tomatoes" -> "tomato",
+  // "berries" -> "berry". Harmless if a variant doesn't match anything real.
+  function stemVariants(token) {
+    const variants = new Set([token]);
+    if (token.endsWith("ies") && token.length > 4) {
+      variants.add(token.slice(0, -3) + "y");
+    }
+    if (token.endsWith("es") && token.length > 3) {
+      variants.add(token.slice(0, -2));
+    }
+    if (token.endsWith("s") && !token.endsWith("ss") && token.length > 3) {
+      variants.add(token.slice(0, -1));
+    }
+    return [...variants];
+  }
+
+  // Returns a category name if confident, or null if the name is unknown
+  // or ambiguous (matches more than one category equally well) — in either
+  // case the caller should ask the person instead of guessing.
+  function detectCategory(rawName) {
+    const name = rawName.toLowerCase().trim();
+    if (!name) return null;
+
+    const tokens = tokenize(name);
+    if (tokens.length === 0) return null;
+
+    const expandedTokens = new Set();
+    for (const t of tokens) {
+      for (const v of stemVariants(t)) expandedTokens.add(v);
+    }
+
+    const matches = []; // { category, weight }
+    for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+      for (const keyword of keywords) {
+        const kwWords = keyword.split(" ");
+        if (kwWords.length === 1) {
+          if (expandedTokens.has(keyword)) {
+            matches.push({ category, weight: keyword.length });
+          }
+        } else {
+          const lastWord = kwWords[kwWords.length - 1];
+          const prefix = kwWords.slice(0, -1).map(escapeRegex).join("\\s+");
+          const pattern = "\\b" + (prefix ? prefix + "\\s+" : "") +
+            escapeRegex(lastWord) + "(?:es|s)?\\b";
+          if (new RegExp(pattern).test(name)) {
+            matches.push({ category, weight: keyword.length + 5 }); // phrases are more specific
+          }
+        }
+      }
+    }
+
+    if (matches.length === 0) return null;
+
+    matches.sort((a, b) => b.weight - a.weight);
+    const topWeight = matches[0].weight;
+    const topCategories = new Set(
+      matches.filter((m) => m.weight === topWeight).map((m) => m.category)
+    );
+
+    return topCategories.size === 1 ? [...topCategories][0] : null;
+  }
+
+  let categoryChosenManually = false;
+
+  function setCategoryHint(text, kind) {
+    el.categoryHint.textContent = text || "";
+    el.categoryHint.className = "category-hint" + (kind ? ` is-${kind}` : "");
+  }
+
+  function runAutoCategorize() {
+    const name = el.itemName.value.trim();
+    if (categoryChosenManually) return; // respect the person's own pick
+    if (!name) {
+      el.itemCategory.value = "";
+      setCategoryHint("");
+      return;
+    }
+    const guess = detectCategory(name);
+    if (guess) {
+      el.itemCategory.value = guess;
+      setCategoryHint(`Auto-detected: ${guess} (tap to change)`, "auto");
+    } else {
+      el.itemCategory.value = "";
+      setCategoryHint(`Not sure what type of item "${name}" is — please choose a category.`, "unsure");
+    }
+  }
+
+  let autoCategorizeTimer = null;
+  el.itemName.addEventListener("input", () => {
+    clearTimeout(autoCategorizeTimer);
+    autoCategorizeTimer = setTimeout(runAutoCategorize, 250);
+  });
+
+  el.itemCategory.addEventListener("change", () => {
+    categoryChosenManually = true;
+    setCategoryHint("");
+  });
+
+  function resetCategoryPicker() {
+    categoryChosenManually = false;
+    el.itemCategory.value = "";
+    setCategoryHint("");
+  }
 
   // ---------- Persisted "your name" + color tag ----------
   el.yourName.value = localStorage.getItem("grocery.yourName") || "";
@@ -93,9 +272,11 @@
   // ---------- Loading data ----------
   async function loadCategories() {
     categories = await api("/api/categories");
-    el.itemCategory.innerHTML = categories
+    const options = categories
       .map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
       .join("");
+    el.itemCategory.innerHTML =
+      `<option value="" disabled selected>Choose a category…</option>` + options;
   }
 
   async function loadColors() {
@@ -337,6 +518,13 @@
     e.preventDefault();
     const name = el.itemName.value.trim();
     if (!name) return;
+
+    if (!el.itemCategory.value) {
+      setCategoryHint(`Not sure what type of item "${name}" is — please choose a category.`, "unsure");
+      el.itemCategory.focus();
+      return;
+    }
+
     const payload = {
       name,
       category: el.itemCategory.value,
@@ -346,6 +534,7 @@
     };
     el.itemName.value = "";
     el.itemQty.value = "";
+    resetCategoryPicker();
     el.itemName.focus();
     try {
       const created = await api("/api/items", {

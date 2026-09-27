@@ -6,9 +6,12 @@ store, use **Start Grocery Shopping** to get a clean, tappable checklist.
 
 ## How it works
 
-- **List view** — add items with a name, category, and optional quantity.
-  Items are grouped and ordered by category, roughly matching how a grocery
-  store is laid out (produce first, household/cleaning near the end).
+- **List view** — add items with a name; the category fills in on its own
+  for common items (eggs → Dairy & Eggs, apples → Produce, etc.). If it
+  doesn't recognize something, it won't guess — it clears the category
+  field and asks you to pick one before the item can be added. Items are
+  grouped and ordered by category, roughly matching how a grocery store is
+  laid out (produce first, household/cleaning near the end).
 - **Color tags** — pick your name and a color once (under "You"); it's
   remembered on that device and stamped on everything you add, so everyone
   can see at a glance who wants what.

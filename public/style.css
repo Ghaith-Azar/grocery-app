@@ -91,6 +91,10 @@ body {
   min-width: 0;
 }
 
+#item-category:invalid {
+  color: var(--ink-soft);
+}
+
 .qty-input {
   flex: 0.8;
   min-width: 0;
@@ -111,6 +115,20 @@ body {
 
 .add-button:hover { background: var(--market-green-dark); }
 .add-button:active { transform: translateY(1px); }
+
+.category-hint {
+  margin: 6px 2px 0;
+  font-size: 0.82rem;
+  min-height: 1.1em;
+}
+
+.category-hint.is-auto {
+  color: var(--market-green-dark);
+}
+
+.category-hint.is-unsure {
+  color: var(--tomato);
+}
 
 .profile-row {
   display: flex;
