@@ -171,6 +171,45 @@ app.get("/api/recent", async (req, res) => {
   }
 });
 
+// Everything the household has taught the categorizer so far. The table
+// stays tiny (one row per distinct item name), so we just send it all.
+app.get("/api/learned", async (req, res) => {
+  try {
+    const result = await client.execute("SELECT term, category FROM learned_terms");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not load learned categories." });
+  }
+});
+
+// Save (or correct) what category an item name belongs to.
+app.post("/api/learn", async (req, res) => {
+  try {
+    const term = typeof req.body.term === "string" ? req.body.term.trim().slice(0, 120) : "";
+    const category = req.body.category;
+    if (!term) {
+      return res.status(400).json({ error: "A term is required." });
+    }
+    if (!CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: "Unknown category." });
+    }
+    const result = await client.execute({
+      sql: `INSERT INTO learned_terms (term, category, updated_at)
+            VALUES (?, ?, datetime('now'))
+            ON CONFLICT(term) DO UPDATE SET
+              category = excluded.category,
+              updated_at = excluded.updated_at
+            RETURNING term, category`,
+      args: [term, category],
+    });
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not save learned category." });
+  }
+});
+
 init()
   .then(() => {
     app.listen(PORT, () => {

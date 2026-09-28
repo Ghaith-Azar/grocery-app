@@ -7,11 +7,27 @@ store, use **Start Grocery Shopping** to get a clean, tappable checklist.
 ## How it works
 
 - **List view** — add items with a name; the category fills in on its own
-  for common items (eggs → Dairy & Eggs, apples → Produce, etc.). If it
-  doesn't recognize something, it won't guess — it clears the category
-  field and asks you to pick one before the item can be added. Items are
-  grouped and ordered by category, roughly matching how a grocery store is
-  laid out (produce first, household/cleaning near the end).
+  for common items, in either English or Arabic (eggs/بيض → Dairy & Eggs,
+  apples/تفاح → Produce, دجاج → Meat & Seafood, etc.). If it doesn't
+  recognize something, it won't guess — it clears the category field and
+  asks you to pick one before the item can be added. Items are grouped and
+  ordered by category, roughly matching how a grocery store is laid out
+  (produce first, household/cleaning near the end).
+- **It learns your household's items** — if it didn't recognize something
+  (or guessed wrong) and you pick the category yourself, that choice is
+  saved to the database. Next time anyone types that item, it's filled in
+  automatically ("Remembered from before"). Changing an item's category
+  while editing teaches it too.
+- **Edit in place** — tap an item's text (or the pencil) to fix its name,
+  category, or quantity. Enter saves, Escape cancels.
+- **Voice input** — tap the mic next to the item field and say the item.
+  The small EN / ع button switches between English and Arabic. This uses
+  the browser's built-in speech recognition, so it appears only where the
+  browser supports it (Chrome, Edge, Android, recent Safari) and needs
+  microphone permission.
+- **Share via WhatsApp** — sends what's still left to buy, grouped by
+  store section, as a WhatsApp message (items already checked off are left
+  out).
 - **Color tags** — pick your name and a color once (under "You"); it's
   remembered on that device and stamped on everything you add, so everyone
   can see at a glance who wants what.
@@ -20,7 +36,8 @@ store, use **Start Grocery Shopping** to get a clean, tappable checklist.
   re-added yet, so restocking a staple is one tap instead of retyping it.
 - **Start Grocery Shopping** — switches to a large, checkbox-style list.
   Tap an item to check it off as you put it in the cart. A progress bar
-  shows how much of the trip is done.
+  shows how much of the trip is done, and a search box at the top filters
+  a long list (English or Arabic) without affecting the progress count.
 - **Finish Shopping** — archives everything you checked off (removes it
   from the active list). Anything you didn't check stays on the list for
   next time.

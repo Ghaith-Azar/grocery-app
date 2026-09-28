@@ -22,7 +22,11 @@
   <section id="list-view">
 
     <form id="add-form" class="add-bar" autocomplete="off">
-      <input id="item-name" type="text" placeholder="Add an item…" maxlength="80" required />
+      <div class="name-input-row">
+        <input id="item-name" type="text" placeholder="Add an item…" maxlength="80" required dir="auto" />
+        <button type="button" id="voice-lang" class="voice-lang" aria-label="Voice language" hidden>EN</button>
+        <button type="button" id="voice-btn" class="voice-btn" aria-label="Add item by voice" hidden>&#127908;</button>
+      </div>
       <div class="add-bar-row">
         <select id="item-category" aria-label="Category" required></select>
         <input id="item-qty" type="text" placeholder="qty" maxlength="20" class="qty-input" aria-label="Quantity (optional)" />
@@ -52,6 +56,7 @@
     <div id="groups" class="groups"></div>
 
     <button id="start-shopping" class="cta-button" disabled>Start Grocery Shopping</button>
+    <button id="share-whatsapp" class="secondary-button" type="button" disabled>Share list via WhatsApp</button>
   </section>
 
   <!-- ===================== SHOPPING VIEW ===================== -->
@@ -65,6 +70,10 @@
     <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progress-bar">
       <div id="progress-fill" class="progress-fill"></div>
     </div>
+
+    <input id="shopping-search" class="shopping-search" type="search" placeholder="Search the list…" aria-label="Search the list" dir="auto" autocomplete="off" />
+
+    <p id="shopping-no-results" class="shopping-no-results" hidden>No items match your search.</p>
 
     <div id="shopping-groups" class="groups"></div>
 

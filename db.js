@@ -63,6 +63,18 @@ async function init() {
   } catch (err) {
     // Already present — nothing to do.
   }
+
+  // "Teach the categorizer": whenever someone manually picks a category
+  // for an item name, we remember it here so it's recognized next time.
+  // `term` is the normalized item name (lowercased / Arabic-normalized by
+  // the client), so it's a stable key regardless of capitalization.
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS learned_terms (
+      term TEXT PRIMARY KEY,
+      category TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
 }
 
 module.exports = { client, init, CATEGORIES, PERSON_COLORS };
